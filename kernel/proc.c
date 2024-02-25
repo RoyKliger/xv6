@@ -296,6 +296,9 @@ fork(void)
   }
   np->sz = p->sz;
 
+  //copy trace mask
+  np->trace_mask = p->trace_mask;
+
   // copy saved user registers.
   *(np->trapframe) = *(p->trapframe);
 
@@ -680,4 +683,13 @@ procdump(void)
     printf("%d %s %s", p->pid, state, p->name);
     printf("\n");
   }
+}
+
+// adds a trace mask to the process
+int 
+trace(int mask)
+{
+  struct proc *p = myproc();
+  p->trace_mask = mask;
+  return 0;
 }
