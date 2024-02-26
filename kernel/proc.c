@@ -693,3 +693,17 @@ trace(int mask)
   p->trace_mask = mask;
   return 0;
 }
+
+// returns the number of processes
+int
+sysinfo_get_nproc(void)
+{
+  struct proc *p;
+  int nproc = 0;
+  for(p = proc; p < &proc[NPROC]; p++){
+    if(p->state != UNUSED){
+      nproc++;
+    }
+  }
+  return nproc;
+}
