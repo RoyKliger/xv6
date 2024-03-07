@@ -132,14 +132,16 @@ found:
     return 0;
   }
   
-  if((p->usyscall_page = (struct usyscall *)kalloc()) == 0){
+  if((p->usyscall_page = kalloc()) == 0){
     freeproc(p);
     release(&p->lock);
     return 0;
   }
+  memset(p->usyscall_page, 0, PGSIZE);
 
-  // Allocate a page at USYSCALL on the process pagetable.
-  // Allocate a page for the process.
+  struct usyscall usys;
+  usys.pid = p->pid;
+  memmove(p->usyscall_page, &usys, sizeof(usys));
 
   // An empty user page table.
   p->pagetable = proc_pagetable(p);
@@ -148,11 +150,6 @@ found:
     release(&p->lock);
     return 0;
   }
-
-  // Store the pid in a struct usyscall variable.
-  struct usyscall *usys = (struct usyscall *)(USYSCALL + p->pid * sizeof(struct usyscall));
-  usys->pid = p->pid;
-
 
 
   // Set up new context to start executing at forkret,
@@ -239,6 +236,7 @@ proc_freepagetable(pagetable_t pagetable, uint64 sz)
 {
   uvmunmap(pagetable, TRAMPOLINE, 1, 0);
   uvmunmap(pagetable, TRAPFRAME, 1, 0);
+  uvmunmap(pagetable, USYSCALL, 1, 0);
   uvmfree(pagetable, sz);
 }
 
