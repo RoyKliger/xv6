@@ -1,0 +1,4 @@
+Other syscalls that could be made faster are other syscalls that dont need to check a state of something in the kernel, 
+and you can store the result before the system call was even called. for example, the syscall fstat.
+
+Page 1 can be read by the user but not written - you can check if va & 1 or va & 2 for that.
