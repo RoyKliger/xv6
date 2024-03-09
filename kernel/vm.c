@@ -453,6 +453,7 @@ void vmprint_rec(pagetable_t pagetable, int level) {
   }
 }
 
+// prints the content of a page table
 void 
 vmprint(pagetable_t pagetable) 
 {
@@ -460,4 +461,31 @@ vmprint(pagetable_t pagetable)
   vmprint_rec(pagetable, 1); 
 }
 
+// copyouts to buf a bitmask of which pages where accessed
+int 
+pgaccess(uint64 va, int num_pages, void *buf, pagetable_t pgtbl) 
+{
 
+  int max_pages = 1024;
+  int i;
+  char temp_buf[128];
+  memset(temp_buf, 0, 128);
+
+  for (i = 0; i < num_pages && i < max_pages ; i++) {
+    // get the pte for the page
+    pte_t *pte = walk(pgtbl, va + i * PGSIZE, 0);
+    // if the page is valid and has been accessed, set the bit in the bitmask and clear the accessed bit
+    if (pte && (*pte & PTE_V) && (*pte & PTE_A)) {
+      temp_buf[i / 8] |= (1 << (i % 8));
+      *pte &= ~PTE_A;
+    }
+  }
+  
+  if (copyout(pgtbl, (uint64)buf, temp_buf, num_pages / 8) < 0) {
+    return -1;
+  }
+
+  return 0;
+  
+  
+}
